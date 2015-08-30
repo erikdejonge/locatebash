@@ -185,7 +185,7 @@ def main():
     mdfind_results2.reverse()
 
     if len(mdfind_results2) == 0:
-        mdfind_results2.extend(os.popen("/usr/bin/locate " + searchword).read().split(b"\n"))
+        mdfind_results2.extend(os.popen("/usr/bin/locate " + searchword).read().split("\n"))
 
     mdfind_results3 = []
 
