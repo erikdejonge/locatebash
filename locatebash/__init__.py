@@ -151,6 +151,7 @@ def main():
     """
     args = IArguments(__doc__)
     mdfind_results, searchword = locatequery(args)
+    osearchword = searchword
     mdfind_results = [x for x in mdfind_results if x]
     mdfind_results = set(mdfind_results)
     mdfind_results = [xs for xs in mdfind_results if xs]
@@ -214,7 +215,16 @@ def main():
 
     if args.folders is True:
         show_folders(folders, mdfind_results3, searchword, skiplist)
-
+    print("\033[90m")
+    if os.path.expanduser("~/allfiles.txt"):
+        l = open(os.path.expanduser("~/allfiles.txt")).read().split("\n")
+        for i in l:
+            if osearchword.lower() in i.lower() and not i.lower().endswith(osearchword.lower()):
+                print("~/"+str(i).lstrip("./"))
+        for i in l:
+            if i.lower().endswith(osearchword.lower()):
+                print("~/"+str(i).lstrip("./"))
+    print("\033[0m")
 
 if __name__ == "__main__":
     main()
