@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-appinstance
+locatebash
 -
 Active8 (04-03-15)
 author: erik@a8.nl
@@ -21,9 +21,9 @@ setup(name='locatebash',
       },
       packages=['locatebash'],
       zip_safe=True,
-      install_requires=['arguments', 'fuzzywuzzy'],
+      install_requires=['consoleprinter', 'arguments', 'fuzzywuzzy', 'argparse'],
       classifiers=[
-          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 2",
           "Intended Audience :: Developers",
           "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
           "Operating System :: POSIX",
