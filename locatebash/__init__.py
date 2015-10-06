@@ -208,6 +208,8 @@ def main():
 
     for i in mdfind_results3:
         print(i)
+        if i.strip().lower().endswith("emlx"):
+            print(os.path.exists(i))
 
     folders = sorted(set(folders))
     skiplist = ["Library/Mail"]
