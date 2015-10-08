@@ -15,11 +15,11 @@ project : devenv
 created : 09-06-15 / 09:35
 """
 import os
-
+import pyzmail
 from arguments import Arguments
 from functools import cmp_to_key
 from fuzzywuzzy import fuzz
-
+from cmdssh import call_command
 
 class IArguments(Arguments):
     """
@@ -74,13 +74,19 @@ def locatequery(args):
         textsearch = True
 
     print("\033[91m[" + query_display + "]:\033[0m")
-    sl = str(os.popen(get_mdfind("mdfind -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'")).read())
+    sl = call_command(get_mdfind("mdfind -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
     mdfind_results.extend(sl.split("\n"))
     mdfind_results = [x for x in mdfind_results if x]
-    mdfind_results.extend(os.popen(get_mdfind("mdfind -name '" + searchword + "'")).read().split("\n"))
+    res = call_command(get_mdfind("mdfind -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
+    mdfind_results.extend(res.split("\n"))
 
     if textsearch:
-        mdfind_results.extend(os.popen(get_mdfind("mdfind -onlyin ~/workspace " + searchword)).read().split("\n"))
+        res = call_command(get_mdfind("mdfind -onlyin ~/workspace " + searchword), returnoutput=True, streamoutput=False)
+        mdfind_results.extend(res.read().split("\n"))
+
+    if len(mdfind_results) < 10:
+        res = call_command(get_mdfind("mdfind " + searchword), returnoutput=True, streamoutput=False)
+        mdfind_results.extend(res.read().split("\n"))
 
     return mdfind_results, searchword
 
@@ -207,25 +213,31 @@ def main():
         mdfind_results3.reverse()
 
     for i in mdfind_results3:
-        print(i)
-        if i.strip().lower().endswith("emlx"):
-            print(os.path.exists(i))
+        if i.strip()!= osearchword.strip():
+            print(i)
+
+            if i.strip().lower().endswith("emlx"):
+                if os.path.exists(i):
+                    msg=pyzmail.PyzMessage.factory(open(i).read())
+
 
     folders = sorted(set(folders))
-    skiplist = ["Library/Mail"]
+    #skiplist = ["Library/Mail"]
     folders.sort(key=lambda x: (x.count("/"), len(x), x))
 
-    if args.folders is True:
-        show_folders(folders, mdfind_results3, searchword, skiplist)
+    #if args.folders is True:
+    #    show_folders(folders, mdfind_results3, searchword, skiplist)
 
-    if len(mdfind_results3)==1 and len(folders)==1:
+    if len(mdfind_results3) == 1 and len(folders) == 1:
         print("\033[90m")
+        l = os.popen("glocate " + osearchword).read().split("\n")
 
-        l = os.popen("glocate "+osearchword).read().split("\n")
         for i in l:
+            if i!=osearchword:
+                print("~/" + str(i).lstrip("./"))
 
-            print("~/"+str(i).lstrip("./"))
     print("\033[0m")
+
 
 if __name__ == "__main__":
     main()

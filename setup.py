@@ -21,7 +21,7 @@ setup(name='locatebash',
       },
       packages=['locatebash'],
       zip_safe=True,
-      install_requires=['consoleprinter', 'arguments', 'fuzzywuzzy', 'argparse'],
+      install_requires=['consoleprinter', 'arguments', 'fuzzywuzzy', 'argparse', 'pyzmail', 'cmdssh'],
       classifiers=[
           "Programming Language :: Python :: 2",
           "Intended Audience :: Developers",
