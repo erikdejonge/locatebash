@@ -16,10 +16,13 @@ created : 09-06-15 / 09:35
 """
 import os
 import pyzmail
+
 from arguments import Arguments
+from consoleprinter import remove_colors
 from functools import cmp_to_key
 from fuzzywuzzy import fuzz
 from cmdssh import call_command
+
 
 class IArguments(Arguments):
     """
@@ -82,11 +85,11 @@ def locatequery(args):
 
     if textsearch:
         res = call_command(get_mdfind("mdfind -onlyin ~/workspace " + searchword), returnoutput=True, streamoutput=False)
-        mdfind_results.extend(res.read().split("\n"))
+        mdfind_results.extend(res.split("\n"))
 
     if len(mdfind_results) < 10:
-        res = call_command(get_mdfind("mdfind " + searchword), returnoutput=True, streamoutput=False)
-        mdfind_results.extend(res.read().split("\n"))
+        res = call_command(get_mdfind("mdfind " + searchword), verbose=True, returnoutput=True, streamoutput=False)
+        mdfind_results.extend(res.split("\n"))
 
     return mdfind_results, searchword
 
@@ -212,20 +215,14 @@ def main():
     if len(mdfind_results3) > 0:
         mdfind_results3.reverse()
 
-    for i in mdfind_results3:
-        if i.strip()!= osearchword.strip():
-            print(i)
+    for i in set(mdfind_results3):
+        if i != osearchword:
+            mdfind_results3.append(i)
 
-            if i.strip().lower().endswith("emlx"):
-                if os.path.exists(i):
-                    msg=pyzmail.PyzMessage.factory(open(i).read())
-
-
-    folders = sorted(set(folders))
-    #skiplist = ["Library/Mail"]
-    folders.sort(key=lambda x: (x.count("/"), len(x), x))
-
-    #if args.folders is True:
+    # folders = sorted(set(folders))
+    # skiplist = ["Library/Mail"]
+    # folders.sort(key=lambda x: (x.count("/"), len(x), x))
+    # if args.folders is True:
     #    show_folders(folders, mdfind_results3, searchword, skiplist)
 
     if len(mdfind_results3) == 1 and len(folders) == 1:
@@ -233,8 +230,34 @@ def main():
         l = os.popen("glocate " + osearchword).read().split("\n")
 
         for i in l:
-            if i!=osearchword:
+            if i != osearchword:
                 print("~/" + str(i).lstrip("./"))
+    else:
+        mdfind_results3 = list(set(mdfind_results3))
+        mdfind_results3.sort(key=lambda x: (-x.count("/"), len(x), x))
+
+        for i in mdfind_results3:
+            ipath = remove_colors(i)
+
+            if ipath.strip().lower().endswith(".emlx"):
+                sub = "-"
+                if os.path.exists(ipath):
+
+                     conts = open(ipath, "rb").read().decode("utf8", "ignore")
+                     conts = conts.split("Content-Type:")
+                #
+                     if len(conts) > 1:
+                        cont = "Content-Type:" + "Content-Type:".join(conts[1:])
+                #
+                        msg = pyzmail.PyzMessage.factory(cont)
+                #         aan = ", ".join(msg.get_address('from')) + ":"
+                        sub2 = msg.get_subject().replace("\n", "").strip()
+                        if sub2.split():
+                            sub = sub2
+
+                print("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m")
+            else:
+                print(i)
 
     print("\033[0m")
 
