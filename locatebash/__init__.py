@@ -88,7 +88,7 @@ def locatequery(args):
         mdfind_results.extend(res.split("\n"))
 
     if len(mdfind_results) < 10:
-        res = call_command(get_mdfind("mdfind " + searchword), verbose=True, returnoutput=True, streamoutput=False)
+        res = call_command(get_mdfind("mdfind " + searchword), verbose=False, returnoutput=True, streamoutput=False)
         mdfind_results.extend(res.split("\n"))
 
     return mdfind_results, searchword
