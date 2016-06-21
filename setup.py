@@ -8,7 +8,7 @@ license: GNU-GPL2
 """
 from setuptools import setup
 setup(name='locatebash',
-      version='6',
+      version='9',
       description='Combines mdfind and locate',
       url='https://github.com/erikdejonge/locatebash',
       author='Erik de Jonge',
