@@ -14,6 +14,16 @@ author  : rabshakeh (erik@a8.nl)
 project : devenv
 created : 09-06-15 / 09:35
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from builtins import super
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
+from past.builtins import cmp
+from builtins import str
 import os
 import pyzmail
 
@@ -255,7 +265,7 @@ def main():
                         if sub2.split():
                             sub = sub2
 
-                print("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m")
+                print(("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m"))
             else:
                 print(i)
 
