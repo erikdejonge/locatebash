@@ -265,7 +265,7 @@ def main():
                         if sub2.split():
                             sub = sub2
 
-                print(("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m"))
+                print("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m")
             else:
                 print(i)
 
