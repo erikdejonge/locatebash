@@ -25,7 +25,11 @@ standard_library.install_aliases()
 from past.builtins import cmp
 from builtins import str
 import os
-import pyzmail
+try:
+        import pyzmail
+        GOTPYZ = True
+except:
+        GOTPYZ = False
 
 from arguments import Arguments
 from consoleprinter import remove_colors
@@ -259,11 +263,13 @@ def main():
                      if len(conts) > 1:
                         cont = "Content-Type:" + "Content-Type:".join(conts[1:])
                 #
-                        msg = pyzmail.PyzMessage.factory(cont)
+                        global GOTPYZ
+                        if GOTPYZ:
+                                msg = pyzmail.PyzMessage.factory(cont)
                 #         aan = ", ".join(msg.get_address('from')) + ":"
-                        sub2 = msg.get_subject().replace("\n", "").strip()
-                        if sub2.split():
-                            sub = sub2
+                                sub2 = msg.get_subject().replace("\n", "").strip()
+                                if sub2.split():
+                                    sub = sub2
 
                 print("\033[90mmail:" + os.path.basename(ipath), sub + "\033[0m")
             else:
