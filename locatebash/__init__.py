@@ -91,7 +91,7 @@ def locatequery(args):
         textsearch = True
 
     print("\033[91m[" + query_display + "]:\033[0m")
-    sl = call_command(get_mdfind("mdfind -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
+    sl = call_command(get_mdfind("mdfind kMDItemFSInvisible==1 -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
     mdfind_results.extend(sl.split("\n"))
     mdfind_results = [x for x in mdfind_results if x]
     res = call_command(get_mdfind("mdfind -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
