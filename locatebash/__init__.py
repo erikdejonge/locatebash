@@ -24,6 +24,7 @@ from future import standard_library
 standard_library.install_aliases()
 from past.builtins import cmp
 from builtins import str
+import time
 import os
 try:
         import pyzmail
@@ -32,11 +33,114 @@ except:
         GOTPYZ = False
 
 from arguments import Arguments
-from consoleprinter import remove_colors
+from consoleprinter import remove_colors, console
 from functools import cmp_to_key
 from fuzzywuzzy import fuzz
-from cmdssh import call_command
+#from cmdssh import call_command
+import subprocess
+import hashlib
+import stat
 
+def call_command(command, cmdfolder=os.path.expanduser("~"), verbose=False, streamoutput=True, returnoutput=False, prefix=None, ret_and_code=False):
+    """
+    @type command: str, unicode
+    @type cmdfolder: str, unicode
+    @type verbose: bool
+    @type streamoutput: bool
+    @type returnoutput: bool
+    @type prefix: str, None
+    @type ret_and_code: bool
+    @return: None
+    """
+    try:
+        if ret_and_code is True:
+            streamoutput = False
+            returnoutput = True
+
+        if verbose:
+            console(cmdfolder, command, color="yellow")
+
+        for prevfile in os.listdir(cmdfolder):
+            if prevfile.startswith("callcommand_"):
+                os.remove(os.path.join(cmdfolder, prevfile))
+
+        commandfile = "callcommand_" + hashlib.md5(str(command).encode()).hexdigest() + ".sh"
+        commandfilepath = os.path.join(cmdfolder, commandfile)
+        open(commandfilepath, "w").write(command)
+
+        if not os.path.exists(commandfilepath):
+            raise ValueError("commandfile could not be made")
+
+        try:
+            os.chmod(commandfilepath, stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
+
+            proc = subprocess.Popen(commandfilepath, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=cmdfolder, shell=True)
+            retval = ""
+
+            if streamoutput is True:
+                while proc.poll() is None:
+                    time.sleep(0.1)
+                    output = proc.stdout.readline()
+
+                    if isinstance(output, bytes):
+                        output = output.decode()
+
+                    if len(remove_escapecodes(output).strip()) > 0:
+                        if returnoutput is True:
+                            retval += str(output)
+
+                        if prefix is None:
+                            prefix = command
+
+                        if len(prefix) > 50:
+                            prefix = prefix.split()[0]
+
+                        console(output.rstrip(), color="green", prefix=prefix)
+
+                        if returnoutput is True:
+                            retval += output
+
+            so, se = proc.communicate()
+
+            if ret_and_code is False and (proc.returncode != 0 or verbose):
+                so = so.decode().strip()
+                se = se.decode().strip()
+                output = str(so + se).strip()
+
+                if proc.returncode == 1:
+                    if verbose:
+                        console_error(command, CallCommandException("Exit on: " + command), errorplaintxt=output, line_num_only=9)
+                    else:
+                        raise CallCommandException("Exit on: " + command+" - "+output)
+
+                else:
+                    console("returncode: " + str(proc.returncode), command, color="red")
+
+            if ret_and_code is True or returnoutput is True and streamoutput is False:
+                retval = so
+                retval += se
+
+                if hasattr(retval, "decode"):
+                    retval = retval.decode()
+
+            if ret_and_code is True:
+                returnoutput = False
+
+            if returnoutput is True:
+                return retval.strip()
+            elif ret_and_code is True:
+                return proc.returncode, retval.rstrip()
+            else:
+                return proc.returncode
+        finally:
+            if os.path.exists(commandfilepath):
+                #if proc.returncode == 0:
+                os.remove(commandfilepath)
+
+    except ValueError as e:
+        console_exception(e)
+    except subprocess.CalledProcessError as e:
+        console_exception(e)
 
 class IArguments(Arguments):
     """
@@ -69,7 +173,7 @@ def get_mdfind(cmd):
     @return: None
     """
 
-    # console(cmd)
+    #console(cmd)
     return cmd
 
 
@@ -91,7 +195,7 @@ def locatequery(args):
         textsearch = True
 
     print("\033[91m[" + query_display + "]:\033[0m")
-    sl = call_command(get_mdfind("mdfind kMDItemFSInvisible==1 -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
+    sl = call_command(get_mdfind("mdfind -onlyin '" + os.path.expanduser("~") + "' -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
     mdfind_results.extend(sl.split("\n"))
     mdfind_results = [x for x in mdfind_results if x]
     res = call_command(get_mdfind("mdfind -name '" + searchword + "'"), returnoutput=True, streamoutput=False)
